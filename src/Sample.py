@@ -35,9 +35,29 @@ class SampleListener(Leap.Listener):
   def on_frame(self, controller):
     frame = controller.frame()
 
+    hands_data = []
+    for hand in frame.hands:
+        hand_data = {}
+        hand_data['position'] = hand.wrist_position.to_float_array()
+        hand_data['direction'] = hand.direction.to_float_array()
+        hand_data['palmNormal'] = hand.palm_position.to_float_array()
+        finger_data = {}
+        for finger in hand.fingers:
+            bones_data = [{}] * 4
+            for i in range(4):
+                bone = finger.bone(i)
+                bones_data[i]['position'] = bone.center.to_float_array()
+                bones_data[i]['direction'] = bone.direction.to_float_array()
+                bones_data[i]['length'] = bone.length
+            finger_data['bones'] = bones_data
+        hand_data['fingers'] = finger_data
+        hands_data.append(hand_data)
+
     print("Frame id: %d, timestamp: %d, hands: %d, fingers: %d, tool: %d, "
             "gestures: %d" % (frame.id, frame.timestamp, len(frame.hands),
-                len(frame.fingers), len(frame.tools), len(frame.gestures())))
+                len(frame.fingers.extended()), len(frame.tools),
+                len(frame.gestures())))
+    print(hands_data)
 
 def main():
   global args
